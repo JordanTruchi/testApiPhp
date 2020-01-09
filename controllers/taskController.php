@@ -1,66 +1,71 @@
 <?php
-include ('./services/bdd.php');
 include ('./models/tasks.php');
 
 function listTask() {
-	global $dbh;
-	$queryTest = "SELECT * from task";
-	$req = $dbh->prepare($queryTest);
-	$req->execute();
-	$res = $req->fetchAll(PDO::FETCH_ASSOC);
-	$result = [];
-	foreach ($res as $taskResp) {
-		$task = new Task($taskResp['id'], $taskResp['name'], $taskResp['date'], $taskResp['categorie'], $taskResp['content'], $taskResp['images']);
-		array_push($result, $task);
+	try {
+		$list = new Task('', '', '', '', '', '');
+		$list = $list->allTask();
+		header('Content-Type: application/json');
+		echo json_encode($list);
+	} catch (Exception $e) {
+		http_response_code(400);
+		echo 'Exception reçue : ',  $e->getMessage(), "\n";
 	}
-	$req->closeCursor();
-	
-	echo json_encode($result);
-	
 }
 
 function oneTask($id) {
-	global $dbh;
-	$queryTest = "SELECT * from task WHERE id =".$id;
-	$req = $dbh->prepare($queryTest);
-	$req->execute();
-	$res = $req->fetch(PDO::FETCH_ASSOC);
-	$req->closeCursor();
-	echo json_encode($res);
-	
+	try {
+		$task = new Task('', '', '', '', '', '');
+		$task = $task->getOne($id);
+		header('Content-Type: application/json');
+		echo json_encode($task);
+	} catch (Exception $e) {
+		http_response_code(400);
+		echo 'Exception reçue : ',  $e->getMessage(), "\n";
+	}
 }
 
-function createTask($name, $date, $categorie, $content, $images) {
-	global $dbh;
-	$task = new Task('', $name, $date, $categorie, $content, $images);
-	$query = 'INSERT INTO task VALUES(:id, :name, :date, :categorie, :content, :images)';
-	$req = $dbh->prepare($query);
-	$req->execute(array(
-		':id' => $task->getId(),
-        ':name' => $task->getName(),
-        ':date' => $task->getDate(),
-		':categorie' => $task->getCategorie(),
-		':content' => $task->getContent(),
-		':images' => json_encode($task->getImages())
-	)) or die(print_r($req->errorInfo()));
-	$req->closeCursor();
-	echo json_encode($task, true);
+function postTask($name, $date, $categorie, $content, $images) {
+	try {
+		$task = new Task('', $name, $date, $categorie, $content, $images);
+		$postedTask = $task->create($task);
+		header('Content-Type: application/json');
+		echo json_encode($postedTask, true);
+	} catch (Exception $e) {
+		http_response_code(400);
+		echo 'Exception reçue : ',  $e->getMessage(), "\n";
+	}
 }
 
-function patchTask($id, $name, $date, $categorie, $content, $images) {
-	global $dbh;
-	$task = new Task('', $name, $date, $categorie, $content, $images);
-	$query = 'INSERT INTO task VALUES(:id, :name, :date, :categorie, :content, :images)';
-	$req = $dbh->prepare($query);
-	$req->execute(array(
-		':id' => $task->getId(),
-        ':name' => $task->getName(),
-        ':date' => $task->getDate(),
-		':categorie' => $task->getCategorie(),
-		':content' => $task->getContent(),
-		':images' => json_encode($task->getImages())
-	)) or die(print_r($req->errorInfo()));
-	$req->closeCursor();
-	echo json_encode($task, true);
+function updateTask($id, $name, $date, $categorie, $content, $images) {
+	try {
+		$task = new Task('', $name, $date, $categorie, $content, $images);
+		$isTaskExist = $task->getOne($id);
+		$task = $task->patch($id, $task);
+		$task->setId($id);
+		if(!isEmpty($task->getName())) $task->setName($isTaskExist['name']);
+		if(!isEmpty($task->getDate())) $task->setDate($isTaskExist['date']);
+		if(!isEmpty($task->getCategorie())) $task->setCategorie($isTaskExist['categorie']);
+		if(!isEmpty($task->getContent())) $task->setContent($isTaskExist['content']);
+		if(!isEmpty($task->getImages())) $task->setImages($isTaskExist['images']);
+		header('Content-Type: application/json');
+		echo json_encode($task, true);
+	} catch (Exception $e) {
+		http_response_code(400);
+		echo 'Exception reçue : ',  $e->getMessage(), "\n";
+	}
+}
+
+function deleteTask($id) {
+	try {
+		$task = new Task('', '', '', '', '', '');
+		$isTaskExist = $task->getOne($id);
+		$messageIfDeleted = $task->delete($id);
+		header('Content-Type: application/json');
+		echo json_encode($messageIfDeleted, true);
+	} catch (Exception $e) {
+		http_response_code(400);
+		echo 'Exception reçue : ',  $e->getMessage(), "\n";
+	}
 }
 ?>

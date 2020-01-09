@@ -7,5 +7,5 @@ const LOGIN_BDD = 'root';
 const MDP_BDD = '';
 $requestMethod = $_SERVER['REQUEST_METHOD'];
 $requestUrl = $_SERVER['REQUEST_URI'];
-$routeUrl = str_replace(BASE_URL, '', $requestUrl);
+$ressourcesAsk = str_replace(BASE_URL, '', $requestUrl);
 ?>

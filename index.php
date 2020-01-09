@@ -1,17 +1,34 @@
 <?php
-require_once ('env.php');
-include ('controllers/taskController.php');
+include_once ('./router/possibleRoute.php');
+include_once ('env.php');
+include_once ('controllers/taskController.php');
+include_once ('./services/validator/validator.php');
+include_once ('./services/helper/helper.php');
 
-if($routeUrl === 'tasks' && $requestMethod === 'GET') {
+if($ressourcesAsk === ROUTER_TASKS && $requestMethod === 'GET') {
     listTask();
 }
 
-$routeOneTask = '/^tasks\/[0-9]+$/';
-if(preg_match($routeOneTask, $routeUrl) && $requestMethod === 'GET') {
-    $idToSearch = ltrim($routeUrl, '/tasks/');
+if(preg_match(ROUTER_ONE_TASK, $ressourcesAsk) && $requestMethod === 'GET') {
+    $idToSearch = ltrim($ressourcesAsk, '/tasks/');
     oneTask($idToSearch);
 }
-if($routeUrl === 'tasks' && $requestMethod === 'POST') {
-    createTask($_POST['name'], $_POST['date'], $_POST['categorie'], $_POST['content'], $_POST['images']);
+
+if(preg_match(ROUTER_ONE_TASK, $ressourcesAsk) && $requestMethod === 'PATCH') {
+    $idToSearch = ltrim($ressourcesAsk, '/tasks/');
+    $data = file_get_contents('php://input');
+    $data = json_decode($data);
+    updateTask($idToSearch, $data->name, $data->date, $data->categorie, $data->content, $data->images);
+}
+
+if(preg_match(ROUTER_ONE_TASK, $ressourcesAsk) && $requestMethod === 'DELETE') {
+    $idToDelete = ltrim($ressourcesAsk, '/tasks/');
+    deleteTask($idToDelete);
+}
+
+if($ressourcesAsk === ROUTER_TASKS && $requestMethod === 'POST') {
+    $data = file_get_contents('php://input');
+    $data = json_decode($data);
+    postTask($data->name, $data->date, $data->categorie, $data->content, $data->images);
 }
 ?>
