@@ -8,4 +8,5 @@ const MDP_BDD = '';
 $requestMethod = $_SERVER['REQUEST_METHOD'];
 $requestUrl = $_SERVER['REQUEST_URI'];
 $ressourcesAsk = str_replace(BASE_URL, '', $requestUrl);
+const TARGET_DIR = "./static/img/";
 ?>

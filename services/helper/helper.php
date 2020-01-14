@@ -8,8 +8,4 @@ function reverseDate8($date) {
     return substr($date, 8, 2)."-".substr($date, 5, 2)."-".substr($date, 0, 4);
 }
 
-function applyUrlImgDir($url) {
-    return 'static/img/'.$url;
-}
-
 ?>

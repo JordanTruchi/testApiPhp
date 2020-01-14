@@ -1,8 +1,8 @@
 <?php
 
 function isEmpty($value) {
-    if($value === "" || $value === null || sizeOf($value) === 0) return false;
-    return true;
+    if($value === "" || $value === null || sizeOf($value) === 0) return true;
+    return false;
 }
 
 ?>

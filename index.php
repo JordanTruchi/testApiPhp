@@ -14,11 +14,9 @@ if(preg_match(ROUTER_ONE_TASK, $ressourcesAsk) && $requestMethod === 'GET') {
     oneTask($idToSearch);
 }
 
-if(preg_match(ROUTER_ONE_TASK, $ressourcesAsk) && $requestMethod === 'PATCH') {
+if(preg_match(ROUTER_ONE_TASK, $ressourcesAsk) && $requestMethod === 'POST') {
     $idToSearch = ltrim($ressourcesAsk, '/tasks/');
-    $data = file_get_contents('php://input');
-    $data = json_decode($data);
-    updateTask($idToSearch, $data->name, $data->date, $data->categorie, $data->content, $data->images);
+    updateTask($idToSearch, $_POST['titleTask'], $_POST['dateTask'], $_POST['categTask'], $_POST['contentTask'], $_FILES);
 }
 
 if(preg_match(ROUTER_ONE_TASK, $ressourcesAsk) && $requestMethod === 'DELETE') {
@@ -27,8 +25,6 @@ if(preg_match(ROUTER_ONE_TASK, $ressourcesAsk) && $requestMethod === 'DELETE') {
 }
 
 if($ressourcesAsk === ROUTER_TASKS && $requestMethod === 'POST') {
-    $data = file_get_contents('php://input');
-    $data = json_decode($data);
-    postTask($data->name, $data->date, $data->categorie, $data->content, $data->images);
+    postTask($_POST['titleTask'], $_POST['dateTask'], $_POST['categTask'], $_POST['contentTask'], $_FILES);
 }
 ?>

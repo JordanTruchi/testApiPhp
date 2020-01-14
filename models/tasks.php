@@ -74,7 +74,10 @@ class Task implements JsonSerializable {
     }
 
     public function setImages($images) {
-        return $this->images = json_decode($images);
+        if(gettype($images) === 'string')
+            return $this->images = json_decode($images);
+        else 
+            return $this->images = $images;
     }
 
     public function allTask() {
@@ -84,7 +87,9 @@ class Task implements JsonSerializable {
         $req->execute();
         $res = $req->fetchAll(PDO::FETCH_ASSOC);
         if(!$res) throw new Exception('Ressource non existante');
-        
+        foreach ($res as $key => $value) {
+            $res[$key]['images'] = json_decode($value['images']);
+        }
         $req->closeCursor();
 
         return $res;
@@ -98,19 +103,26 @@ class Task implements JsonSerializable {
         $result = $req->fetch(PDO::FETCH_ASSOC);
         if(!$result) throw new Exception('Ressource non existante');
 	    $req->closeCursor();
-        $result['date'] = reverseDate8($result['date']); 
         return $result;
     }
 
     public function create($task) {
         global $dbh;
         if(!isEmpty($task->name) || !isEmpty($task->date) || !isEmpty($task->categorie) || !isEmpty($task->content) || !isEmpty($task->images)) throw new Exception('Tous les champs ne sont pas remplis');
-        $task->date = reverseDate6($task->date);
+        
+        $goodFormatImages = [];
+        foreach ($task->images as $key => $image) {
+            $target_file = TARGET_DIR . basename($image["name"]);
+            $imageFileType = strtolower(pathinfo($target_file,PATHINFO_EXTENSION));
+            move_uploaded_file($image["tmp_name"], $target_file);
+            $tempObject = new stdClass();
+            $tempObject->url = '/todoList/back/api'.str_replace('.', '', TARGET_DIR).$image['name'];
+            $tempObject->name = str_replace('.'.$imageFileType, '', $image['name']);
+            array_push($goodFormatImages, $tempObject);
+        }
+        $task->setImages($goodFormatImages);
         $query = "INSERT INTO task (name, date, categorie, content, images) VALUES (:name, :date, :categorie, :content, :images)";
         $req = $dbh->prepare($query);
-        foreach ($task->getImages()->images as $key => $value) {
-            $value->url = applyUrlImgDir($value->url);
-        }
         $req->execute(array(
             ':name' => $task->getName(),
             ':date' => $task->getDate(),
@@ -125,7 +137,7 @@ class Task implements JsonSerializable {
         $res = $req->fetch(PDO::FETCH_ASSOC);
         $req->closeCursor();
         $task->setId($res['LAST_INSERT_ID()']);
-        $task->date = reverseDate6($task->date);
+        $task->date = reverseDate8($task->date);
         return $task;
     }
 
@@ -146,6 +158,17 @@ class Task implements JsonSerializable {
             $query .= ", content = '".$task->getContent()."'";
         } 
         if(!isEmpty($task->getImages())) {
+            $goodFormatImages = [];
+            foreach ($task->images as $key => $image) {
+                $target_file = TARGET_DIR . basename($image["name"]);
+                $imageFileType = strtolower(pathinfo($target_file,PATHINFO_EXTENSION));
+                move_uploaded_file($image["tmp_name"], $target_file);
+                $tempObject = new stdClass();
+                $tempObject->url = '/todoList/back/api'.str_replace('.', '', TARGET_DIR).$image['name'];
+                $tempObject->name = str_replace('.'.$imageFileType, '', $image['name']);
+                array_push($goodFormatImages, $tempObject);
+            }
+            $task->setImages($goodFormatImages);
             $query .= ", images = '".json_encode($task->getImages())."'";
         } 
         $query .= " WHERE id = ".$id;
