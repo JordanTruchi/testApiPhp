@@ -80,7 +80,7 @@ class Task implements JsonSerializable {
             return $this->images = $images;
     }
 
-    public function allTask() {
+    public static function allTask() {
         global $dbh;
         $queryTest = "SELECT * from task";
         $req = $dbh->prepare($queryTest);
@@ -95,12 +95,13 @@ class Task implements JsonSerializable {
         return $res;
     }
 
-    public function getOne($id) {
+    public static function getOne($id) {
         global $dbh;
         $queryTest = "SELECT * from task WHERE id =".$id;
 	    $req = $dbh->prepare($queryTest);
 	    $req->execute();
         $result = $req->fetch(PDO::FETCH_ASSOC);
+        $result['images'] = json_decode($result['images']);
         if(!$result) throw new Exception('Ressource non existante');
 	    $req->closeCursor();
         return $result;
@@ -108,7 +109,7 @@ class Task implements JsonSerializable {
 
     public function create($task) {
         global $dbh;
-        if(!isEmpty($task->name) || !isEmpty($task->date) || !isEmpty($task->categorie) || !isEmpty($task->content) || !isEmpty($task->images)) throw new Exception('Tous les champs ne sont pas remplis');
+        if(isEmpty($task->name) || isEmpty($task->date) || isEmpty($task->categorie) || isEmpty($task->content) || isEmpty($task->images)) throw new Exception('Tous les champs ne sont pas remplis');
         
         $goodFormatImages = [];
         foreach ($task->images as $key => $image) {
@@ -137,7 +138,6 @@ class Task implements JsonSerializable {
         $res = $req->fetch(PDO::FETCH_ASSOC);
         $req->closeCursor();
         $task->setId($res['LAST_INSERT_ID()']);
-        $task->date = reverseDate8($task->date);
         return $task;
     }
 

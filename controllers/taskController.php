@@ -3,8 +3,7 @@ include ('./models/tasks.php');
 
 function listTask() {
 	try {
-		$list = new Task('', '', '', '', '', '');
-		$list = $list->allTask();
+		$list = task::allTask();
 		header('Content-Type: application/json');
 		echo json_encode($list);
 	} catch (Exception $e) {
@@ -15,8 +14,7 @@ function listTask() {
 
 function oneTask($id) {
 	try {
-		$task = new Task('', '', '', '', '', '');
-		$task = $task->getOne($id);
+		$task = task::getOne($id);
 		header('Content-Type: application/json');
 		echo json_encode($task);
 	} catch (Exception $e) {
